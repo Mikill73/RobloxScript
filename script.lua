@@ -1,31 +1,24 @@
---[[
-	WARNING: Heads up! This script has not been verified by ScriptBlox. Use at your own risk!
-]]
--- MTI2 - Bring All NPCs GUI | CodeX (Mobile Pure Lua)
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local NPCFolder = workspace:FindFirstChild("NPCs") or workspace
 
--- GUI Setup
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
 local main = Instance.new("Frame", gui)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-main.Size = UDim2.new(0, 220, 0, 120)
+main.Size = UDim2.new(0, 250, 0, 180)
 main.Position = UDim2.new(0, 30, 0, 100)
 main.BorderSizePixel = 0
 
--- Top Bar (Draggable)
 local topBar = Instance.new("TextButton", main)
 topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-topBar.Text = "▼ MTI2 - NPC BRINGER"
+topBar.Text = "MTI2 - PUXAR NPCs"
 topBar.TextColor3 = Color3.new(1, 1, 1)
 topBar.TextScaled = true
 topBar.BorderSizePixel = 0
 
--- Draggable Support (Mobile)
 local dragging, dragStart, startPos
 topBar.InputBegan:Connect(function(input)
 	if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -44,48 +37,100 @@ topBar.InputChanged:Connect(function(input)
 	end
 end)
 
--- Container Frame
 local container = Instance.new("Frame", main)
 container.BackgroundTransparency = 1
 container.Position = UDim2.new(0, 0, 0, 30)
 container.Size = UDim2.new(1, 0, 1, -30)
 
--- Bring NPCs Button
 local bringBtn = Instance.new("TextButton", container)
 bringBtn.Size = UDim2.new(1, -20, 0, 35)
 bringBtn.Position = UDim2.new(0, 10, 0, 10)
 bringBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 bringBtn.TextColor3 = Color3.new(1, 1, 1)
 bringBtn.TextScaled = true
-bringBtn.Text = "🔁 Bring All NPCs"
+bringBtn.Text = "PUXAR NPCs"
 bringBtn.BorderSizePixel = 0
 bringBtn.AutoButtonColor = true
 
--- Toggle Loop
+local quantidadeLabel = Instance.new("TextLabel", container)
+quantidadeLabel.Size = UDim2.new(1, -20, 0, 25)
+quantidadeLabel.Position = UDim2.new(0, 10, 0, 50)
+quantidadeLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+quantidadeLabel.TextColor3 = Color3.new(1, 1, 1)
+quantidadeLabel.TextScaled = true
+quantidadeLabel.Text = "Quantidade de NPCs:"
+quantidadeLabel.BorderSizePixel = 0
+
+local quantidadeBox = Instance.new("TextBox", container)
+quantidadeBox.Size = UDim2.new(1, -20, 0, 35)
+quantidadeBox.Position = UDim2.new(0, 10, 0, 78)
+quantidadeBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+quantidadeBox.TextColor3 = Color3.new(1, 1, 1)
+quantidadeBox.TextScaled = true
+quantidadeBox.Text = "10"
+quantidadeBox.PlaceholderText = "Digite um numero"
+quantidadeBox.BorderSizePixel = 0
+
 local bringing = false
+local puxando = false
+
 bringBtn.MouseButton1Click:Connect(function()
 	bringing = not bringing
-	bringBtn.Text = bringing and "✅ Bringing NPCs" or "🔁 Bring All NPCs"
-
+	
 	if bringing then
+		bringBtn.Text = "PUXANDO..."
+		bringBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
+		
+		local quantidadeDesejada = tonumber(quantidadeBox.Text)
+		if not quantidadeDesejada or quantidadeDesejada <= 0 then
+			quantidadeDesejada = 10
+		end
+		
+		puxando = true
+		
 		task.spawn(function()
-			while bringing do
+			while puxando and bringing do
+				local npcsEncontrados = {}
+				
 				for _, npc in pairs(NPCFolder:GetDescendants()) do
 					if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
-						npc:MoveTo(LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(math.random(-4, 4), 0, math.random(-4, 4)))
+						table.insert(npcsEncontrados, npc)
 					end
 				end
-				wait(1)
+				
+				local npcsParaPuxar = {}
+				for i = 1, math.min(quantidadeDesejada, #npcsEncontrados) do
+					table.insert(npcsParaPuxar, npcsEncontrados[i])
+				end
+				
+				local chaoY = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position.Y or 0
+				
+				for _, npc in pairs(npcsParaPuxar) do
+					local npcHRP = npc:FindFirstChild("HumanoidRootPart")
+					local playerHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+					
+					if npcHRP and playerHRP then
+						local novaPosicao = Vector3.new(playerHRP.Position.X, chaoY, playerHRP.Position.Z)
+						npc:MoveTo(novaPosicao)
+						npcHRP.CFrame = CFrame.new(novaPosicao)
+					end
+				end
+				
+				task.wait(0.5)
 			end
 		end)
+	else
+		bringing = false
+		puxando = false
+		bringBtn.Text = "PUXAR NPCs"
+		bringBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 	end
 end)
 
--- Collapse Button Toggle
 local collapsed = false
 topBar.MouseButton1Click:Connect(function()
 	collapsed = not collapsed
 	container.Visible = not collapsed
-	topBar.Text = collapsed and "▲ MTI2 - NPC BRINGER" or "▼ MTI2 - NPC BRINGER"
-	main.Size = collapsed and UDim2.new(0, 220, 0, 30) or UDim2.new(0, 220, 0, 120)
+	topBar.Text = collapsed and "MTI2 - PUXAR NPCs" or "MTI2 - PUXAR NPCs"
+	main.Size = collapsed and UDim2.new(0, 250, 0, 30) or UDim2.new(0, 250, 0, 180)
 end)

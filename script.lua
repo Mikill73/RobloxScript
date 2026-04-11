@@ -82,23 +82,19 @@ bringBtn.MouseButton1Click:Connect(function()
 		bringBtn.Text = "PUXANDO..."
 		bringBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
 		
-		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-			posicaoSalva = LocalPlayer.Character.HumanoidRootPart.Position
-		end
-		
 		local quantidadeDesejada = tonumber(quantidadeBox.Text)
 		if not quantidadeDesejada or quantidadeDesejada <= 0 then
 			quantidadeDesejada = 10
+		end
+		
+		if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+			posicaoSalva = LocalPlayer.Character.HumanoidRootPart.Position
 		end
 		
 		puxando = true
 		
 		task.spawn(function()
 			while puxando and bringing do
-				if posicaoSalva and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-					LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(posicaoSalva)
-				end
-				
 				local npcsEncontrados = {}
 				
 				for _, npc in pairs(NPCFolder:GetDescendants()) do
@@ -122,6 +118,10 @@ bringBtn.MouseButton1Click:Connect(function()
 						npc:MoveTo(novaPosicao)
 						npcHRP.CFrame = CFrame.new(novaPosicao)
 					end
+				end
+				
+				if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and posicaoSalva then
+					LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(posicaoSalva)
 				end
 				
 				task.wait(0.5)

@@ -8,13 +8,13 @@ gui.ResetOnSpawn = false
 local main = Instance.new("Frame", gui)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 main.Size = UDim2.new(0, 250, 0, 180)
-main.Position = UDim2.new(0, 30, 0, 300)
+main.Position = UDim2.new(0, 30, 0, 100)
 main.BorderSizePixel = 0
 
 local topBar = Instance.new("TextButton", main)
 topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-topBar.Text = "MTI2 - AFASTAR NPCs"
+topBar.Text = "MTI2 - PUXAR NPCs"
 topBar.TextColor3 = Color3.new(1, 1, 1)
 topBar.TextScaled = true
 topBar.BorderSizePixel = 0
@@ -42,66 +42,77 @@ container.BackgroundTransparency = 1
 container.Position = UDim2.new(0, 0, 0, 30)
 container.Size = UDim2.new(1, 0, 1, -30)
 
-local afastarBtn = Instance.new("TextButton", container)
-afastarBtn.Size = UDim2.new(1, -20, 0, 35)
-afastarBtn.Position = UDim2.new(0, 10, 0, 10)
-afastarBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-afastarBtn.TextColor3 = Color3.new(1, 1, 1)
-afastarBtn.TextScaled = true
-afastarBtn.Text = "AFASTAR NPCs"
-afastarBtn.BorderSizePixel = 0
-afastarBtn.AutoButtonColor = true
+local bringBtn = Instance.new("TextButton", container)
+bringBtn.Size = UDim2.new(1, -20, 0, 35)
+bringBtn.Position = UDim2.new(0, 10, 0, 10)
+bringBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+bringBtn.TextColor3 = Color3.new(1, 1, 1)
+bringBtn.TextScaled = true
+bringBtn.Text = "PUXAR NPCs"
+bringBtn.BorderSizePixel = 0
+bringBtn.AutoButtonColor = true
 
-local distanciaLabel = Instance.new("TextLabel", container)
-distanciaLabel.Size = UDim2.new(1, -20, 0, 25)
-distanciaLabel.Position = UDim2.new(0, 10, 0, 50)
-distanciaLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-distanciaLabel.TextColor3 = Color3.new(1, 1, 1)
-distanciaLabel.TextScaled = true
-distanciaLabel.Text = "Distancia de afastamento:"
-distanciaLabel.BorderSizePixel = 0
+local quantidadeLabel = Instance.new("TextLabel", container)
+quantidadeLabel.Size = UDim2.new(1, -20, 0, 25)
+quantidadeLabel.Position = UDim2.new(0, 10, 0, 50)
+quantidadeLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+quantidadeLabel.TextColor3 = Color3.new(1, 1, 1)
+quantidadeLabel.TextScaled = true
+quantidadeLabel.Text = "Quantidade de NPCs:"
+quantidadeLabel.BorderSizePixel = 0
 
-local distanciaBox = Instance.new("TextBox", container)
-distanciaBox.Size = UDim2.new(1, -20, 0, 35)
-distanciaBox.Position = UDim2.new(0, 10, 0, 78)
-distanciaBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-distanciaBox.TextColor3 = Color3.new(1, 1, 1)
-distanciaBox.TextScaled = true
-distanciaBox.Text = "500"
-distanciaBox.PlaceholderText = "Digite a distancia"
-distanciaBox.BorderSizePixel = 0
+local quantidadeBox = Instance.new("TextBox", container)
+quantidadeBox.Size = UDim2.new(1, -20, 0, 35)
+quantidadeBox.Position = UDim2.new(0, 10, 0, 78)
+quantidadeBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+quantidadeBox.TextColor3 = Color3.new(1, 1, 1)
+quantidadeBox.TextScaled = true
+quantidadeBox.Text = "10"
+quantidadeBox.PlaceholderText = "Digite um numero"
+quantidadeBox.BorderSizePixel = 0
 
-local afastando = false
-local ativo = false
+local bringing = false
+local puxando = false
 
-afastarBtn.MouseButton1Click:Connect(function()
-	afastando = not afastando
+bringBtn.MouseButton1Click:Connect(function()
+	bringing = not bringing
 	
-	if afastando then
-		afastarBtn.Text = "AFSTANDO..."
-		afastarBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
+	if bringing then
+		bringBtn.Text = "PUXANDO..."
+		bringBtn.BackgroundColor3 = Color3.fromRGB(0, 100, 0)
 		
-		local distanciaDesejada = tonumber(distanciaBox.Text)
-		if not distanciaDesejada or distanciaDesejada <= 0 then
-			distanciaDesejada = 500
+		local quantidadeDesejada = tonumber(quantidadeBox.Text)
+		if not quantidadeDesejada or quantidadeDesejada <= 0 then
+			quantidadeDesejada = 10
 		end
 		
-		ativo = true
+		puxando = true
 		
 		task.spawn(function()
-			while ativo and afastando do
-				local jogadorPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+			while puxando and bringing do
+				local npcsEncontrados = {}
 				
-				if jogadorPos then
-					for _, npc in pairs(NPCFolder:GetDescendants()) do
-						if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
-							local npcHRP = npc.HumanoidRootPart
-							local direcao = (npcHRP.Position - jogadorPos.Position).Unit
-							local novaPosicao = jogadorPos.Position + (direcao * distanciaDesejada)
-							
-							npc:MoveTo(novaPosicao)
-							npcHRP.CFrame = CFrame.new(novaPosicao)
-						end
+				for _, npc in pairs(NPCFolder:GetDescendants()) do
+					if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+						table.insert(npcsEncontrados, npc)
+					end
+				end
+				
+				local npcsParaPuxar = {}
+				for i = 1, math.min(quantidadeDesejada, #npcsEncontrados) do
+					table.insert(npcsParaPuxar, npcsEncontrados[i])
+				end
+				
+				local chaoY = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character.HumanoidRootPart.Position.Y or 0
+				
+				for _, npc in pairs(npcsParaPuxar) do
+					local npcHRP = npc:FindFirstChild("HumanoidRootPart")
+					local playerHRP = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+					
+					if npcHRP and playerHRP then
+						local novaPosicao = Vector3.new(playerHRP.Position.X, chaoY, playerHRP.Position.Z)
+						npc:MoveTo(novaPosicao)
+						npcHRP.CFrame = CFrame.new(novaPosicao)
 					end
 				end
 				
@@ -109,10 +120,10 @@ afastarBtn.MouseButton1Click:Connect(function()
 			end
 		end)
 	else
-		afastando = false
-		ativo = false
-		afastarBtn.Text = "AFASTAR NPCs"
-		afastarBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+		bringing = false
+		puxando = false
+		bringBtn.Text = "PUXAR NPCs"
+		bringBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 	end
 end)
 
@@ -120,6 +131,6 @@ local collapsed = false
 topBar.MouseButton1Click:Connect(function()
 	collapsed = not collapsed
 	container.Visible = not collapsed
-	topBar.Text = collapsed and "MTI2 - AFASTAR NPCs" or "MTI2 - AFASTAR NPCs"
+	topBar.Text = collapsed and "MTI2 - PUXAR NPCs" or "MTI2 - PUXAR NPCs"
 	main.Size = collapsed and UDim2.new(0, 250, 0, 30) or UDim2.new(0, 250, 0, 180)
 end)

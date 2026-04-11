@@ -1,20 +1,20 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
+local NPCFolder = workspace:FindFirstChild("NPCs") or workspace
 
 local gui = Instance.new("ScreenGui", game.CoreGui)
 gui.ResetOnSpawn = false
 
 local main = Instance.new("Frame", gui)
 main.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-main.Size = UDim2.new(0, 300, 0, 450)
-main.Position = UDim2.new(0, 30, 0, 100)
+main.Size = UDim2.new(0, 250, 0, 180)
+main.Position = UDim2.new(0, 30, 0, 300)
 main.BorderSizePixel = 0
 
 local topBar = Instance.new("TextButton", main)
 topBar.Size = UDim2.new(1, 0, 0, 30)
 topBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-topBar.Text = "MTI2 - PUXAR ITENS"
+topBar.Text = "MTI2 - AFASTAR NPCs"
 topBar.TextColor3 = Color3.new(1, 1, 1)
 topBar.TextScaled = true
 topBar.BorderSizePixel = 0
@@ -42,113 +42,84 @@ container.BackgroundTransparency = 1
 container.Position = UDim2.new(0, 0, 0, 30)
 container.Size = UDim2.new(1, 0, 1, -30)
 
-local atualizarBtn = Instance.new("TextButton", container)
-atualizarBtn.Size = UDim2.new(1, -20, 0, 35)
-atualizarBtn.Position = UDim2.new(0, 10, 0, 5)
-atualizarBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
-atualizarBtn.TextColor3 = Color3.new(1, 1, 1)
-atualizarBtn.TextScaled = true
-atualizarBtn.Text = "ATUALIZAR LISTA"
-atualizarBtn.BorderSizePixel = 0
+local afastarBtn = Instance.new("TextButton", container)
+afastarBtn.Size = UDim2.new(1, -20, 0, 35)
+afastarBtn.Position = UDim2.new(0, 10, 0, 10)
+afastarBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+afastarBtn.TextColor3 = Color3.new(1, 1, 1)
+afastarBtn.TextScaled = true
+afastarBtn.Text = "AFASTAR NPCs"
+afastarBtn.BorderSizePixel = 0
+afastarBtn.AutoButtonColor = true
 
-local scrollingFrame = Instance.new("ScrollingFrame", container)
-scrollingFrame.Size = UDim2.new(1, -20, 1, -50)
-scrollingFrame.Position = UDim2.new(0, 10, 0, 45)
-scrollingFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-scrollingFrame.BorderSizePixel = 0
-scrollingFrame.ScrollBarThickness = 8
-scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+local distanciaLabel = Instance.new("TextLabel", container)
+distanciaLabel.Size = UDim2.new(1, -20, 0, 25)
+distanciaLabel.Position = UDim2.new(0, 10, 0, 50)
+distanciaLabel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+distanciaLabel.TextColor3 = Color3.new(1, 1, 1)
+distanciaLabel.TextScaled = true
+distanciaLabel.Text = "Distancia de afastamento:"
+distanciaLabel.BorderSizePixel = 0
 
-local listLayout = Instance.new("UIListLayout", scrollingFrame)
-listLayout.SortOrder = Enum.SortOrder.Name
-listLayout.Padding = UDim.new(0, 2)
+local distanciaBox = Instance.new("TextBox", container)
+distanciaBox.Size = UDim2.new(1, -20, 0, 35)
+distanciaBox.Position = UDim2.new(0, 10, 0, 78)
+distanciaBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+distanciaBox.TextColor3 = Color3.new(1, 1, 1)
+distanciaBox.TextScaled = true
+distanciaBox.Text = "500"
+distanciaBox.PlaceholderText = "Digite a distancia"
+distanciaBox.BorderSizePixel = 0
 
-local function atualizarLista()
-	for _, child in pairs(scrollingFrame:GetChildren()) do
-		if child:IsA("TextButton") then
-			child:Destroy()
-		end
-	end
+local afastando = false
+local ativo = false
+
+afastarBtn.MouseButton1Click:Connect(function()
+	afastando = not afastando
 	
-	local itens = {}
-	
-	local function buscarItens(objeto)
-		for _, item in pairs(objeto:GetChildren()) do
-			if item:IsA("Tool") or item:IsA("BasePart") then
-				local nome = item.Name
-				if not itens[nome] then
-					itens[nome] = {}
-				end
-				table.insert(itens[nome], item)
-			end
-			buscarItens(item)
-		end
-	end
-	
-	buscarItens(workspace)
-	
-	local yOffset = 0
-	for nome, lista in pairs(itens) do
-		local botao = Instance.new("TextButton", scrollingFrame)
-		botao.Size = UDim2.new(1, -10, 0, 35)
-		botao.Position = UDim2.new(0, 5, 0, yOffset)
-		botao.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-		botao.TextColor3 = Color3.new(1, 1, 1)
-		botao.Text = nome .. " (" .. #lista .. ")"
-		botao.TextScaled = true
-		botao.BorderSizePixel = 0
+	if afastando then
+		afastarBtn.Text = "AFSTANDO..."
+		afastarBtn.BackgroundColor3 = Color3.fromRGB(100, 0, 0)
 		
-		local instancias = lista
+		local distanciaDesejada = tonumber(distanciaBox.Text)
+		if not distanciaDesejada or distanciaDesejada <= 0 then
+			distanciaDesejada = 500
+		end
 		
-		botao.MouseButton1Click:Connect(function()
-			local playerChar = LocalPlayer.Character
-			local playerHRP = playerChar and playerChar:FindFirstChild("HumanoidRootPart")
-			
-			if playerHRP then
-				local alvo = instancias[1]
-				if alvo then
-					local posicaoAlvo = alvo:FindFirstChild("Handle") and alvo.Handle.Position or alvo:IsA("BasePart") and alvo.Position or alvo:GetPivot().Position
-					
-					local clone = Instance.new("Part")
-					clone.Size = Vector3.new(1, 1, 1)
-					clone.Anchored = true
-					clone.CanCollide = false
-					clone.Transparency = 1
-					clone.Position = playerHRP.Position
-					clone.Parent = workspace
-					
-					local tween = game:GetService("TweenService"):Create(clone, TweenInfo.new(0.2), {Position = posicaoAlvo})
-					tween:Play()
-					tween.Completed:Connect(function()
-						alvo:SetPrimaryPartCFrame(CFrame.new(playerHRP.Position))
-						if alvo:IsA("BasePart") then
-							alvo.Position = playerHRP.Position
+		ativo = true
+		
+		task.spawn(function()
+			while ativo and afastando do
+				local jogadorPos = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+				
+				if jogadorPos then
+					for _, npc in pairs(NPCFolder:GetDescendants()) do
+						if npc:IsA("Model") and npc:FindFirstChild("Humanoid") and npc:FindFirstChild("HumanoidRootPart") then
+							local npcHRP = npc.HumanoidRootPart
+							local direcao = (npcHRP.Position - jogadorPos.Position).Unit
+							local novaPosicao = jogadorPos.Position + (direcao * distanciaDesejada)
+							
+							npc:MoveTo(novaPosicao)
+							npcHRP.CFrame = CFrame.new(novaPosicao)
 						end
-						clone:Destroy()
-					end)
+					end
 				end
+				
+				task.wait(0.5)
 			end
 		end)
-		
-		yOffset = yOffset + 37
+	else
+		afastando = false
+		ativo = false
+		afastarBtn.Text = "AFASTAR NPCs"
+		afastarBtn.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
 	end
-	
-	scrollingFrame.CanvasSize = UDim2.new(0, 0, 0, yOffset + 10)
-end
-
-atualizarBtn.MouseButton1Click:Connect(function()
-	atualizarBtn.Text = "CARREGANDO..."
-	task.wait()
-	atualizarLista()
-	atualizarBtn.Text = "ATUALIZAR LISTA"
 end)
 
 local collapsed = false
 topBar.MouseButton1Click:Connect(function()
 	collapsed = not collapsed
 	container.Visible = not collapsed
-	topBar.Text = collapsed and "MTI2 - PUXAR ITENS" or "MTI2 - PUXAR ITENS"
-	main.Size = collapsed and UDim2.new(0, 300, 0, 30) or UDim2.new(0, 300, 0, 450)
+	topBar.Text = collapsed and "MTI2 - AFASTAR NPCs" or "MTI2 - AFASTAR NPCs"
+	main.Size = collapsed and UDim2.new(0, 250, 0, 30) or UDim2.new(0, 250, 0, 180)
 end)
-
-atualizarLista()
